@@ -1,14 +1,13 @@
-﻿using AzureMLPrediction;
-using Microsoft.ML;
+﻿using Microsoft.ML;
 
 var mlContext = new MLContext();
 
 // Train and save the ML model
-var trainer = new MLTraining();
+var trainer = new AzureMLPrediction.Model.Sales.SalesTrainer();
 trainer.TrainAndSaveModel();
 
 // predictions
-var predictor = new MLPrediction();
+var predictor = new AzureMLPrediction.Model.Sales.SalesPredicter();
 predictor.MLPredictionModel();
 
 // Load the trained model and inspect the schema

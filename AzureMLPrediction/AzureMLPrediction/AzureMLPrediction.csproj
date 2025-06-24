@@ -12,4 +12,8 @@
     <PackageReference Include="Microsoft.ML.FastTree" Version="4.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

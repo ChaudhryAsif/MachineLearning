@@ -29,6 +29,6 @@ Generated_Code/
 *.dbmdl
 *.bak
 
-# ML.NET Models & Data (optional - if you recreate on build)
-*.zip
-*.csv
+# # ML.NET Models & Data (optional - if you recreate on build)
+# *.zip
+# *.csv
