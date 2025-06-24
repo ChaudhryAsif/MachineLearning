@@ -9,9 +9,22 @@ namespace AzureMLPrediction
         {
             var mlContext = new MLContext();
 
-            // Load model
+            // Load trained model
             DataViewSchema modelSchema;
             ITransformer mlModel = mlContext.Model.Load("MLModel.zip", out modelSchema);
+
+            // Load training data to evaluate model
+            var trainingData = mlContext.Data.LoadFromTextFile<ModelTrainingData>(
+                path: "F:\\Files\\enhanced_sales_data.csv",
+                separatorChar: ',',
+                hasHeader: true);
+
+            // Evaluate the model
+            var predictions = mlModel.Transform(trainingData);
+            var metrics = mlContext.Regression.Evaluate(predictions, labelColumnName: "Sales");
+
+            Console.WriteLine($"R²: {metrics.RSquared:0.##}");
+            Console.WriteLine($"RMSE: {metrics.RootMeanSquaredError:#.##}");
 
             // Create prediction engine
             var predEngine = mlContext.Model.CreatePredictionEngine<ModelInput, ModelOutput>(mlModel);
@@ -19,13 +32,18 @@ namespace AzureMLPrediction
             // Input sample
             var input = new ModelInput
             {
-                Day = 5,
-                Month = 1,
-                Year = 2024,
-                Holiday = 0,
-                Weekday = 0,
-                Temp = 0.36f,
-                Hum = 0.69f
+                Day = 7,
+                Month = 14,
+                Year = 2023,
+                Weekday = 1,
+                IsHoliday = 0,
+                IsWeekend = 0,           // Saturday
+                Temp = 0.33368f,
+                Humidity = 0.791486f,
+                StoreId = 1,
+                Region = "West",        // Use one of: North, South, East, West
+                Promotion = 0,
+                Discount = 0
             };
 
             // Predict
