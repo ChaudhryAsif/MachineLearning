@@ -1,4 +1,6 @@
 ﻿using Microsoft.ML;
+using System;
+using System.IO;
 
 namespace AzureMLPrediction.Model.Sales
 {
@@ -8,50 +10,58 @@ namespace AzureMLPrediction.Model.Sales
         {
             var context = new MLContext();
 
-            string dataPath = Path.Combine(Environment.CurrentDirectory, "Data", "enhanced_sales_data.csv");
+            // Dynamically get the project root by going up from bin\Debug\net8.0\
+            string projectRoot = Directory.GetParent(AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName;
 
-            // Load training data from a CSV file into an IDataView
+            // Paths relative to project root
+            string dataPath = Path.Combine(projectRoot, "Data", "enhanced_sales_data.csv");
+            string modelPath = Path.Combine(projectRoot, "Models", "SalesModel.zip");
+
+            // Load training data from CSV
             var trainingData = context.Data.LoadFromTextFile<SalesModelTrainingData>(
                 path: dataPath,
                 separatorChar: ',',
                 hasHeader: true
             );
 
-            // Build the data processing and training pipeline
+            // Build the pipeline
             var pipeline = context.Transforms
-                          .Categorical.OneHotEncoding(outputColumnName: "RegionEncoded", inputColumnName: nameof(SalesModelTrainingData.Region))
-                          .Append(context.Transforms.Concatenate(
-                              outputColumnName: "Features",
-                              nameof(SalesModelTrainingData.Day),
-                              nameof(SalesModelTrainingData.Month),
-                              nameof(SalesModelTrainingData.Year),
-                              nameof(SalesModelTrainingData.IsHoliday),
-                              nameof(SalesModelTrainingData.Weekday),
-                              nameof(SalesModelTrainingData.Temp),
-                              nameof(SalesModelTrainingData.Humidity),
-                              nameof(SalesModelTrainingData.IsWeekend),
-                              nameof(SalesModelTrainingData.StoreId),
-                              nameof(SalesModelTrainingData.Promotion),
-                              nameof(SalesModelTrainingData.Discount),
-                              "RegionEncoded" // include the encoded string column
-                          ))
-                          .Append(context.Regression.Trainers.FastTree(
-                                 labelColumnName: nameof(SalesModelTrainingData.Sales),
-                                 featureColumnName: "Features",
-                                 numberOfLeaves: 50,
-                                 numberOfTrees: 200,
-                                 minimumExampleCountPerLeaf: 1,
-                                 learningRate: 0.2
-                          ));
+                .Categorical.OneHotEncoding(outputColumnName: "RegionEncoded", inputColumnName: nameof(SalesModelTrainingData.Region))
+                .Append(context.Transforms.Concatenate(
+                    outputColumnName: "Features",
+                    nameof(SalesModelTrainingData.Day),
+                    nameof(SalesModelTrainingData.Month),
+                    nameof(SalesModelTrainingData.Year),
+                    nameof(SalesModelTrainingData.IsHoliday),
+                    nameof(SalesModelTrainingData.Weekday),
+                    nameof(SalesModelTrainingData.Temp),
+                    nameof(SalesModelTrainingData.Humidity),
+                    nameof(SalesModelTrainingData.IsWeekend),
+                    nameof(SalesModelTrainingData.StoreId),
+                    nameof(SalesModelTrainingData.Promotion),
+                    nameof(SalesModelTrainingData.Discount),
+                    "RegionEncoded"
+                ))
+                .Append(context.Regression.Trainers.FastTree(
+                    labelColumnName: nameof(SalesModelTrainingData.Sales),
+                    featureColumnName: "Features",
+                    numberOfLeaves: 50,
+                    numberOfTrees: 200,
+                    minimumExampleCountPerLeaf: 1,
+                    learningRate: 0.2
+                ));
 
-            // Train the model using the pipeline
+            // Train model
             var trainedModel = pipeline.Fit(trainingData);
 
-            // Save the trained model to a .zip file
-            using (var fileStream = new FileStream("MLModel.zip", FileMode.Create, FileAccess.Write, FileShare.Write))
-                context.Model.Save(trainedModel, trainingData.Schema, fileStream);
+            // Ensure Models folder exists
+            Directory.CreateDirectory(Path.GetDirectoryName(modelPath)!);
 
-            Console.WriteLine("Model has been trained and saved to MLModel.zip");
+            // Save model
+            using var fileStream = new FileStream(modelPath, FileMode.Create, FileAccess.Write);
+            context.Model.Save(trainedModel, trainingData.Schema, fileStream);
+
+            Console.WriteLine("✅ Sales model trained and saved to: " + modelPath);
         }
     }
 }
