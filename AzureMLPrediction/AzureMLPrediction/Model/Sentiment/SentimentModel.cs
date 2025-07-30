@@ -1,4 +1,6 @@
-﻿using Microsoft.ML;
+﻿using DAL.DbContext;
+using DTO.Extensions;
+using Microsoft.ML;
 using Microsoft.ML.Data;
 
 namespace AzureMLPrediction.Model.Sentiment
@@ -8,22 +10,31 @@ namespace AzureMLPrediction.Model.Sentiment
         private readonly MLContext _mlContext;
         private readonly PredictionEngine<ReviewInput, ReviewOutput> _predEngine;
         private readonly ITransformer _model;
+        private readonly ApplicationDbContext _context;
 
-        public SentimentModel()
+
+        public SentimentModel(ApplicationDbContext context)
         {
+            _context = context;
             _mlContext = new MLContext();
 
+            var rawData = LoadDataFromDatabase(); // uses _context
+            var fullData = _mlContext.Data.LoadFromEnumerable(rawData);
             string projectRoot = Directory.GetParent(AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName;
-            string dataPath = Path.Combine(projectRoot, "Data", "reviews.csv");
 
-            if (!File.Exists(dataPath))
+            if (!rawData.HasAny())
             {
-                Console.WriteLine($"Error: Training data not found at path: {dataPath}");
-                throw new FileNotFoundException($"Training data not found at path: {dataPath}");
-            }
+                
+                string dataPath = Path.Combine(projectRoot, "Data", "reviews.csv");
 
-            var fullData = _mlContext.Data.LoadFromTextFile<ReviewInput>(
-                path: dataPath, hasHeader: true, separatorChar: ',');
+                if (!File.Exists(dataPath))
+                {
+                    Console.WriteLine($"Error: Training data not found at path: {dataPath}");
+                    throw new FileNotFoundException($"Training data not found at path: {dataPath}");
+                }
+
+                fullData = _mlContext.Data.LoadFromTextFile<ReviewInput>(path: dataPath, hasHeader: true, separatorChar: ',');
+            }
 
             LogDataBalance(fullData);
 
@@ -113,6 +124,16 @@ namespace AzureMLPrediction.Model.Sentiment
             Console.WriteLine($"Negative Precision: {metrics.NegativePrecision:P2}");
             Console.WriteLine($"Positive Recall: {metrics.PositiveRecall:P2}");
             Console.WriteLine($"Negative Recall: {metrics.NegativeRecall:P2}");
+        }
+
+        private List<ReviewInput> LoadDataFromDatabase()
+        {
+            return _context.Reviews
+                .Select(r => new ReviewInput
+                {
+                    Label = r.IsPositive,
+                    ReviewText = r.ReviewText
+                }).ToList();
         }
     }
 }

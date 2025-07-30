@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35806.99 d17.13
+VisualStudioVersion = 17.13.35806.99
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureMLPrediction", "AzureMLPrediction\AzureMLPrediction.csproj", "{0B57D442-F0CC-4F53-ABF0-07B3F8DCAEE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL", "DAL\DAL.csproj", "{EED75018-70F5-43C7-8048-65199E972608}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DTO", "DTO\DTO.csproj", "{7AB381B0-71AC-4083-943E-9F4394E77C1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{0B57D442-F0CC-4F53-ABF0-07B3F8DCAEE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B57D442-F0CC-4F53-ABF0-07B3F8DCAEE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B57D442-F0CC-4F53-ABF0-07B3F8DCAEE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EED75018-70F5-43C7-8048-65199E972608}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EED75018-70F5-43C7-8048-65199E972608}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EED75018-70F5-43C7-8048-65199E972608}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EED75018-70F5-43C7-8048-65199E972608}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AB381B0-71AC-4083-943E-9F4394E77C1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AB381B0-71AC-4083-943E-9F4394E77C1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AB381B0-71AC-4083-943E-9F4394E77C1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AB381B0-71AC-4083-943E-9F4394E77C1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

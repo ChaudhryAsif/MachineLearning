@@ -1,5 +1,29 @@
 ﻿using AzureMLPrediction.Model.Sentiment;
+using DAL.DbContext;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.ML;
+using System;
+
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((context, services) =>
+    {
+        // Register EF Core with SQL Server
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer("Server=.;Database=SentimentDb;Trusted_Connection=True;"));
+
+        // Register SentimentModel as a service
+        services.AddTransient<SentimentModel>();
+    })
+    .Build();
+
+// Seed data and run the sentiment model
+using var scope = host.Services.CreateScope();
+var services = scope.ServiceProvider;
+
+// Seed the database with example reviews
+SeedReviews.SeedData(services.GetRequiredService<ApplicationDbContext>());
 
 //var mlContext = new MLContext();
 
@@ -23,7 +47,8 @@ using Microsoft.ML;
 
 //Console.WriteLine("Model loaded successfully!");
 
-var model = new SentimentModel();
+var model = services.GetRequiredService<SentimentModel>();
+//var model = new SentimentModel();
 
 var (pred1, prob1) = model.Predict("not good");
 var (pred2, prob2) = model.Predict("Worst product ever. Not happy at all.");
